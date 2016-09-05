@@ -25,7 +25,7 @@ module Takenoko
   @@truncate_all_data = false
 
   mattr_accessor :allow_overwrite
-  @@allow_overwrite = false
+  @@allow_overwrite = true
 
   require 'takenoko/exporter'
   require 'takenoko/google_client'
