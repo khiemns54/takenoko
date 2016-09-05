@@ -88,7 +88,6 @@ For single table
 
 
 ### Rake task
-### Takenoko usage
 For all tables
 
     rake takenoko:all_to_db
