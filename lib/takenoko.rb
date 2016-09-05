@@ -76,9 +76,8 @@ module Takenoko
       end
 
       table[:header] = table[:columns_mapping].keys
-
       [:allow_overwrite,:truncate_all_data, :file_extension, :export_file_location].each do |f|
-        table[f] = table[f] || class_variable_get("@@" + f.to_s)
+        table[f] = class_variable_get("@@" + f.to_s) unless table.key?(f)
       end
 
       raise "Not support file extension: #{table[:file_extension]}" unless SUPPORTED_FILE_EXT.include?(table[:file_extension])
