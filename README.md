@@ -55,7 +55,7 @@ Table option
 |---|---|---|---|---|
 |**sheet_id**|**Required**||Google spreadsheet id|String|
 |**worksheet_id**|**Required**||Worksheet gid|Integer|
-|**columns_mapping**|**Required**||Mapping database column(key) to spreadsheet column(value), if spreadsheet column not be set, it will be set to database column automatically|Hash|
+|**columns_mapping**|**Required**||Mapping database column(key) to spreadsheet column(value), if spreadsheet column not be set, it will be set to database column automatically, **Caution:** only these columns will be export so list all columns that you need to import here|Hash|
 |**table_name**|Optional|key name|Table name|String|
 |**class_name**|Optional|singular camel form of _table_name_| Model class name| String|
 |**find_column**|_Optional_|id|By default takenoko use worksheet row number as id of row, you have to set this option for find and replace duplicated rows|String|
