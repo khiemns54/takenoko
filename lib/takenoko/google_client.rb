@@ -8,7 +8,7 @@ module Takenoko
       table = Takenoko.table_config(table_name)
       raise "GoogleDrive: Sheet not found" unless sheet = @session.spreadsheet_by_key(table['sheet_id'])
       raise "GoogleDrive: Worksheet not found: worksheet_id #{table['worksheet_id']}" unless worksheet = sheet.worksheet_by_gid(table['worksheet_id'])
-      res = {config: table}
+      header = worksheet.header.select {|h| table[:columns_mapping].keys.include?(h)}
       rows = worksheet.populated_rows.map do |r|
         hash = HashWithIndifferentAccess.new
         table['columns_mapping'].each do |key,val|
@@ -16,7 +16,7 @@ module Takenoko
             hash[key] = r.public_send(val)
           rescue Exception => e
             if key == 'id'
-              hash[key] = r.row_num
+              hash[key] = r.row_num - 1
             else
               hash[key] = nil
             end
@@ -24,8 +24,8 @@ module Takenoko
         end
         hash
       end
-      res[:rows] = rows
-      return res
+      table[:rows] = rows
+      return table
     end
   end
 end

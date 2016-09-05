@@ -16,7 +16,7 @@ module Takenoko
 
   mattr_accessor :file_extension
   @@file_extension = :csv
-  SUPPORTED_FILE_EXT = [:csv]
+  SUPPORTED_FILE_EXT = [:csv,:yaml,:json]
 
   mattr_accessor :export_file_location
   @@export_file_location = "db/spreadsheet"
@@ -62,13 +62,22 @@ module Takenoko
         raise "#{f} cannot be blank" if table[f].blank?
       end
       table[:find_column] = table[:find_column] || :id
-      table[:table_name] = t if table[:table_name].blank?
+      table_name = table[:table_name] = t if table[:table_name].blank?
       table[:class_name] = table[:class_name] || (table_name && table_name.singularize.camelize) || table[:table_name].singularize.camelize
+      unless table[:columns_mapping].key?(table[:find_column])
+        if(table[:find_column] == :id)
+          table[:columns_mapping] = {id: nil}.merge!(table[:columns_mapping])
+        else
+          table[:columns_mapping][table[:find_column]] = nil 
+        end
+      end
       table[:columns_mapping].each do |s_col,db_col|
         table[:columns_mapping][s_col] = s_col unless db_col 
       end
 
-      [:allow_overwrite,:truncate_all_data, :file_extension].each do |f|
+      table[:header] = table[:columns_mapping].keys
+
+      [:allow_overwrite,:truncate_all_data, :file_extension, :export_file_location].each do |f|
         table[f] = table[f] || class_variable_get("@@" + f.to_s)
       end
 
@@ -85,14 +94,21 @@ module Takenoko
   (SUPPORTED_FILE_EXT.clone << :db).each do |output|
     define_method "table_to_#{output}" do | table_name |
       data = google_client.get_table(table_name)
-      Exporter.public_send("to_#{output}",data)
+      Exporter.public_send("table_to_#{output}",data)
     end
 
     define_method "all_to_#{output}" do
-      mapping_config[:tables].each do |table|
+      mapping_config[:tables].each do |table,conf|
         Takenoko.public_send("table_to_#{output}",table)
       end
     end
   end
 
+  class Railtie < Rails::Railtie
+    railtie_name :takenoko
+
+    rake_tasks do
+      load "tasks/takenoko.rake"
+    end
+  end
 end
