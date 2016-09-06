@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version     = Takenoko::VERSION
   s.authors     = ["KhiemNS"]
   s.email       = ["khiemns54@gmail.com"]
-  s.homepage    = "https://github.com/khiemns54"
+  s.homepage    = "https://github.com/khiemns54/takenoko"
   s.summary     = "Import data from google spreadsheet to database or files"
   s.description = "Import data from google spreadsheet to database or files"
 
