@@ -4,7 +4,7 @@ Rails gem for getting data from Google spreedsheet then export to files or datab
 ##Install
 ### 1._Gemfile_
 
-    gem "takenoko", "~> 0.0.3"
+    gem "takenoko", "~> 0.0.4"
 
 ### 2._Generate initializer_
 
