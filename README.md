@@ -108,7 +108,7 @@ For single table
     rake takenoko:table_to_yaml[table_name]
 
 
-### Valation and filtering
+### Validation and filtering
 
 Takenoko uses three method for post processing. Defined them in your postprocess_class. By default, postprocess_class will be class_name in mapping_file.yml
 
