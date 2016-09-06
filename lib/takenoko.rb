@@ -32,6 +32,12 @@ module Takenoko
   mattr_accessor :sheet_id
   @@sheet_id = nil
 
+  mattr_accessor :enable_postprocess
+  @@enable_postprocess = false
+
+  mattr_accessor :postprocess_class
+  @@postprocess_class = nil
+
   require 'takenoko/exporter'
   require 'takenoko/google_client'
 
@@ -51,7 +57,6 @@ module Takenoko
   end
 
   def mapping_config
-    return @@mapping_config if @@mapping_config
     return unless check_config
     if @@mapping_file
       conf = YAML.load_file(@@mapping_file).with_indifferent_access
@@ -74,8 +79,19 @@ module Takenoko
       table[:find_column] = table[:find_column] || :id
       table_name = table[:table_name] = t.pluralize if table[:table_name].blank?
       table[:class_name] = table[:class_name] || (table_name && table_name.singularize.camelize) || table[:table_name].singularize.camelize
-      [:allow_overwrite,:truncate_all_data, :file_extension, :export_file_location].each do |f|
+      [
+        :allow_overwrite,
+        :truncate_all_data,
+        :file_extension,
+        :export_file_location,
+        :enable_postprocess,
+        :postprocess_class
+      ].each do |f|
         table[f] = class_variable_get("@@" + f.to_s) unless table.key?(f)
+      end
+
+      if table[:enable_postprocess] && table[:postprocess_class].blank?
+        table[:postprocess_class] = table[:class_name]
       end
 
       raise "Not support file extension: #{table[:file_extension]}" unless SUPPORTED_FILE_EXT.include?(table[:file_extension])

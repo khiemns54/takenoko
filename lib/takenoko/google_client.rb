@@ -21,7 +21,9 @@ module Takenoko
       end
 
       update_table_config(table,worksheet.header)
+      postprocess_class = Object.const_get(table[:postprocess_class])
 
+      Rails.logger.info "Getting table #{table_name}"
       rows = worksheet.populated_rows.map do |r|
         hash = HashWithIndifferentAccess.new
         table['columns_mapping'].each do |key,val|
@@ -36,12 +38,35 @@ module Takenoko
           end
         end
         hash
+      end.reject do |row|
+        begin
+          table[:enable_postprocess] && !postprocess_class.public_send("spreadsheet_row_valid?",row)
+        rescue NoMethodError => e
+          Rails.logger.warn e.message
+          false
+        end
+      end.map do |row|
+        begin
+          table[:enable_postprocess] ? postprocess_class.public_send("postprocess_spreadsheet_row",row) : row
+        rescue NoMethodError => e
+          Rails.logger.warn e.message
+          row
+        end
       end
+
       table[:rows] = rows
+      if table[:enable_postprocess]
+        begin
+          table = postprocess_class.public_send("postprocess_spreadsheet_table",table) 
+        rescue NoMethodError => e
+          Rails.logger.warn e.message
+        end
+      end
       return table
     end
 
     def session
+      Rails.logger.info "Init session"
       unless @cridential
         return GoogleDrive.saved_session(Takenoko.personal_cridential_file)
       end
@@ -69,22 +94,22 @@ module Takenoko
 
     private
     def update_table_config(table,ws_header)
-      ws_header = ws_header.select do |col|
+      columns_mapping = HashWithIndifferentAccess.new
+      ws_header.select do |col|
         col.present? && ! col.match(/\s*#.*/)
+      end.each do |col|
+        if(table[:columns_mapping].present?)
+          columns_mapping[col] = col && next unless table[:columns_mapping][col].present?
+          next if table[:columns_mapping][col] == false
+          columns_mapping[col] = table[:columns_mapping][col]
+        else
+          columns_mapping[col] = col
+        end
       end
 
-      if(table[:columns_mapping].blank?)
-        columns_mapping = {}
-        ws_header.each do |col| columns_mapping[col.to_sym] = col end
-        table[:columns_mapping] = columns_mapping
-      end
-
+      table[:columns_mapping] = columns_mapping
       unless table[:columns_mapping].key?(table[:find_column])
-          table[:columns_mapping][table[:find_column]] = nil 
-      end
-
-      table[:columns_mapping].each do |s_col,db_col|
-        table[:columns_mapping][s_col] = s_col unless db_col 
+          table[:columns_mapping][table[:find_column]] = table[:find_column]
       end
 
       table[:header] = table[:columns_mapping].keys

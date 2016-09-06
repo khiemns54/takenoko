@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.authors     = ["KhiemNS"]
   s.email       = ["khiemns54@gmail.com"]
   s.homepage    = "https://github.com/khiemns54/takenoko"
-  s.summary     = "Import data from google spreadsheet to database or files"
-  s.description = "Import data from google spreadsheet to database or files"
+  s.summary     = "Import data from google spreadsheet to database or files for Rails"
+  s.description = "Import data from google spreadsheet to database or files for Rails"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.files += Dir.glob("tasks/**/*")
