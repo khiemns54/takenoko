@@ -21,7 +21,7 @@ module Takenoko
       end
 
       update_table_config(table,worksheet.header)
-      postprocess_class = Object.const_get(table[:postprocess_class])
+      postprocess_class = Object.const_get(table[:postprocess_class]) if table[:enable_postprocess] 
 
       Rails.logger.info "Getting table #{table_name}"
       rows = worksheet.populated_rows.map do |r|
