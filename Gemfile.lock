@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    takenoko (0.0.4)
+    takenoko (0.1.1)
       google-api-client (= 0.7.1)
       google_drive
       rails (>= 4.0.13)
