@@ -7,6 +7,9 @@ module Takenoko
   mattr_accessor :google_cridential_file
   @@google_cridential_file = nil
 
+  mattr_accessor :personal_cridential_file
+  @@personal_cridential_file = "config/my_cridential.json"
+
   mattr_accessor :mapping_file
   @@mapping_file = false
 
@@ -26,15 +29,20 @@ module Takenoko
   mattr_accessor :allow_overwrite
   @@allow_overwrite = true
 
+  mattr_accessor :sheet_id
+  @@sheet_id = nil
+
+  mattr_accessor :enable_postprocess
+  @@enable_postprocess = false
+
+  mattr_accessor :postprocess_class
+  @@postprocess_class = nil
+
   require 'takenoko/exporter'
   require 'takenoko/google_client'
 
   def config
     yield self
-  end
-
-  def import
-    check_config
   end
 
   def google_client
@@ -43,40 +51,47 @@ module Takenoko
   end
 
   def check_config
-    raise "google_cridential_file setting cannot be nil" unless @@google_cridential_file
-    raise "file not found:#{@@google_cridential_file}" unless ::File.exist?(@@google_cridential_file)
-    raise "mapping_file cannot be nil" unless @@mapping_file
-    raise "file not found:#{@@mapping_file}" unless ::File.exist?(@@mapping_file)
+    raise "Must specify mapping_file or sheet_id" unless (@@mapping_file || @@sheet_id)
+    raise "file not found:#{@@mapping_file}" if @@mapping_file && !::File.exist?(@@mapping_file)
     return true
   end
 
   def mapping_config
-    return @@mapping_config if @@mapping_config
-    conf = YAML.load_file(@@mapping_file).with_indifferent_access
-    raise "tables not exists" if conf[:tables].blank?
+    return unless check_config
+    if @@mapping_file
+      conf = YAML.load_file(@@mapping_file).with_indifferent_access
+      raise "tables not exists" if conf[:tables].blank?
+    else
+      conf = HashWithIndifferentAccess.new({tables: {}})
+      google_client.spreadsheet.worksheets.each do |ws|
+        next if ws.title.match(/\s*#.*/)
+        conf[:tables][ws.title] = {
+          worksheet_id: ws.gid,
+          worksheet: ws.title
+        }
+      end
+    end
     conf[:tables].each do |t, v|
       table = conf[:tables][t]
       raise "Table config cannot be nil" unless table
-      [:sheet_id, :worksheet_id, :columns_mapping].each do |f|
-        raise "#{f} cannot be blank" if table[f].blank?
-      end
+      raise "#{f} cannot be blank" unless table[:sheet_id] ||= @@sheet_id
+      table[:worksheet] = t if table[:worksheet].blank? && table[:worksheet_id].blank?
       table[:find_column] = table[:find_column] || :id
-      table_name = table[:table_name] = t if table[:table_name].blank?
+      table_name = table[:table_name] = t.pluralize if table[:table_name].blank?
       table[:class_name] = table[:class_name] || (table_name && table_name.singularize.camelize) || table[:table_name].singularize.camelize
-      unless table[:columns_mapping].key?(table[:find_column])
-        if(table[:find_column] == :id)
-          table[:columns_mapping] = {id: nil}.merge!(table[:columns_mapping])
-        else
-          table[:columns_mapping][table[:find_column]] = nil 
-        end
-      end
-      table[:columns_mapping].each do |s_col,db_col|
-        table[:columns_mapping][s_col] = s_col unless db_col 
+      [
+        :allow_overwrite,
+        :truncate_all_data,
+        :file_extension,
+        :export_file_location,
+        :enable_postprocess,
+        :postprocess_class
+      ].each do |f|
+        table[f] = class_variable_get("@@" + f.to_s) unless table.key?(f)
       end
 
-      table[:header] = table[:columns_mapping].keys
-      [:allow_overwrite,:truncate_all_data, :file_extension, :export_file_location].each do |f|
-        table[f] = class_variable_get("@@" + f.to_s) unless table.key?(f)
+      if table[:enable_postprocess] && table[:postprocess_class].blank?
+        table[:postprocess_class] = table[:class_name]
       end
 
       raise "Not support file extension: #{table[:file_extension]}" unless SUPPORTED_FILE_EXT.include?(table[:file_extension])

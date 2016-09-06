@@ -1,3 +1,3 @@
 module Takenoko
-  VERSION = "0.0.4"
+  VERSION = "0.1.1"
 end
