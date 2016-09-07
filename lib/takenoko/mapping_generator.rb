@@ -2,7 +2,9 @@ module Takenoko
   module MappingGenerator
     extend self
     @@mapping_conf = nil
-    ALLOWED_OVERWRITE_FIELD = [
+
+    mattr_accessor :allowed_overwrite_fields
+    @@allowed_overwrite_fields = [
       :allow_overwrite,
       :truncate_all_data,
       :file_extension,
@@ -12,7 +14,8 @@ module Takenoko
       :folder_id
     ]
 
-    FILTER = [
+    mattr_accessor :table_filters
+    @@table_filters = [
       [:set_worksheet, ->(name, table) {
         table[:worksheet] = name if table[:worksheet].blank? && table[:worksheet_id].blank?
       }],
@@ -34,7 +37,7 @@ module Takenoko
       }],
 
       [:overwrite_global_config, ->(name, table){
-        ALLOWED_OVERWRITE_FIELD.each do |f|
+        allowed_overwrite_fields.each do |f|
           table[f] = Takenoko.public_send(f) unless table.key?(f)
         end
       }],
@@ -63,10 +66,10 @@ module Takenoko
     ]
 
     def generate
-      return @@mapping_conf if Takenoko.allow_overwrite && @@mapping_conf
+      return @@mapping_conf if Takenoko.always_reload && @@mapping_conf
       @@mapping_conf = base_config
       @@mapping_conf[:tables].each do |name, table|
-        FILTER.each do |f|
+        table_filters.each do |f|
           f[1].call(name, table)
         end
       end
