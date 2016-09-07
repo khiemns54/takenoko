@@ -35,4 +35,12 @@ Takenoko.config do |conf|
   # Class for post processing, nil for Class = table class name
   # conf.postprocess_class = nil
 
+  # Always reload mapping data, default true
+  # conf.always_reload = true
+
+  # Downloaded file global location, files will be saved under download_location/table_name
+  # conf.download_location = "tmp/attach_files" #Default
+
+  # Google drive folder id, where your attached files're stored
+  # conf.folder_id = nil
 end

@@ -1,4 +1,5 @@
 require "google_drive"
+require "google_drive/session"
 
 module GoogleDrive
   class Worksheet

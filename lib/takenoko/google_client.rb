@@ -92,6 +92,10 @@ module Takenoko
       session.spreadsheet_by_key(sheet_id)
     end
 
+    def folder_by_id(folder_id)
+      session.collection_by_id(folder_id)
+    end
+
     private
     def update_table_config(table,ws_header)
       columns_mapping = HashWithIndifferentAccess.new

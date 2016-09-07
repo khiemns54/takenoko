@@ -16,10 +16,14 @@ module Takenoko
       end
     end
 
+    def table_to_file(table)
+      public_send("table_to_#{table[:file_extension]}",table)
+    end
+
     SUPPORTED_FILE_EXT.each do |fx|
       define_method "table_to_#{fx}" do |table|
           dir = table[:export_file_location]
-          FileUtils.mkdir(dir) unless File.directory?(dir)
+          FileUtils.mkdir_p(dir) unless File.directory?(dir)
           File.open("#{dir}/#{table[:table_name]}.#{fx}","w") do |f|
             f.write public_send("convert_to_#{fx}",table)
           end
