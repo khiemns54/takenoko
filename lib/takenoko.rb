@@ -58,7 +58,7 @@ module Takenoko
   end
 
   def google_client
-    @@google_client ||= GoogleClient.new(@@google_cridential_file)
+    @@google_client ||= GoogleClient.new(google_cridential_file)
     return @@google_client
   end
 
