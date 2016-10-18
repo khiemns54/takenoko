@@ -45,6 +45,10 @@ module Takenoko
   mattr_accessor :download_location
   @@download_location = "tmp/attach_files"
 
+
+  mattr_writer :log_folder
+  @@log_folder = "tmp/takenoko"
+
   mattr_accessor :folder_id
   @@folder_id = nil
 
@@ -57,6 +61,10 @@ module Takenoko
     yield self
   end
 
+  def log_folder
+    FileUtils.mkdir_p(@@log_folder) unless File.directory?(@@log_folder)
+    @@log_folder
+  end
   def google_client
     @@google_client ||= GoogleClient.new(google_cridential_file)
     return @@google_client
@@ -84,10 +92,17 @@ module Takenoko
   end
 
   def download_all_files
+    errors = []
     mapping_config[:tables].each do |table,conf|
       next if conf[:attach_files].blank?
-      download_table_files table
+      begin
+        download_table_files table
+      rescue Exception => e
+        errors << e.to_s
+      end
     end
+    raise errors.join("\n") unless errors.empty?
+    
     return true
   end
 
