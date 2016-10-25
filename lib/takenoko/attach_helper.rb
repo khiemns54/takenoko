@@ -6,7 +6,7 @@ module Takenoko
       table_name = table_data[:table_name]
       takelog = "#{Takenoko.log_folder}/#{table_name}_log.yml"
       log_data = (File.exist?(takelog) && YAML.load_file(takelog)) || {}
-
+      folders = {}
       table_data[:attach_files].each do |col|
         unless (folder_id = col[:folder_id] || table[:folder_id]).present?
           errors << "Folder ID should be set"
@@ -23,7 +23,9 @@ module Takenoko
         download_location = col[:download_location]
         FileUtils.mkdir_p(download_location) unless File.directory?(download_location)
 
-        ls_files = get_drive_files_list Takenoko.google_client.folder_by_id col[:folder_id]
+        unless ls_files = folders[col[:folder_id]]
+          ls_files = folders[col[:folder_id]] = get_drive_files_list Takenoko.google_client.folder_by_id col[:folder_id]
+        end
 
         table_data[:rows].each do |row|
           next if row[column_name].blank?
@@ -33,13 +35,13 @@ module Takenoko
             next
           end
           full_path_name = download_location+"/"+file_name
-          find_col = row[table_data[:find_column]]
-          next if File.exist?(full_path_name) && log_data[find_col].present? && file.modified_date.to_i <= log_data[find_col][:last_modified]
+          log_key = "#{col[:folder_id]}_#{file_name}"
+          next if File.exist?(full_path_name) && log_data[log_key].present? && file.modified_date.to_i <= log_data[log_key][:last_modified]
 
           file.download_to_file(full_path_name)
           Rails.logger.info "Downloaded file: #{full_path_name}"
-          log_data[find_col] ||= {}
-          log_data[find_col][:last_modified] = file.modified_date.to_i 
+          log_data[log_key] ||= {}
+          log_data[log_key][:last_modified] = file.modified_date.to_i 
         end
       end
       File.open(takelog, 'w') {|f| f.write log_data.to_yaml }
