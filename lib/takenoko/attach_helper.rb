@@ -22,12 +22,13 @@ module Takenoko
         Rails.logger.info "Downloading file form table #{table_name}"
         download_location = col[:download_location]
         FileUtils.mkdir_p(download_location) unless File.directory?(download_location)
-        folder = Takenoko.google_client.folder_by_id col[:folder_id]
+
+        ls_files = get_drive_files_list Takenoko.google_client.folder_by_id col[:folder_id]
 
         table_data[:rows].each do |row|
           next if row[column_name].blank?
           file_name = File.basename(row[column_name])
-          unless file = folder.file_by_title(file_name)
+          unless file = ls_files[file_name]
             errors << "Table[#{table_name}] - File: '#{file_name}' not found"
             next
           end
@@ -44,6 +45,19 @@ module Takenoko
       File.open(takelog, 'w') {|f| f.write log_data.to_yaml }
       raise errors.join("\n") unless errors.empty?
       return true
+    end
+
+    #Get all file from drive folder
+    def get_drive_files_list(folder)
+      ls = Hash.new
+      page_token = nil
+      begin
+        (files, page_token) = folder.files("pageToken" => page_token)
+        files.each do |f|
+          ls[f.original_filename] = f
+        end
+      end while page_token
+      return ls
     end
   end
 end
