@@ -28,40 +28,38 @@ module Takenoko
         hash = HashWithIndifferentAccess.new
         table['columns_mapping'].each do |key,val|
           begin
-            hash[key] = r.public_send(val)
+            val = r.public_send(val)
           rescue Exception => e
             if key == 'id'
-              hash[key] = r.row_num - 1
+              val = r.row_num - 1
             else
-              hash[key] = nil
+              val = nil
             end
           end
+          hash[key.to_sym] = format_row val
         end
         hash
-      end.reject do |row|
-        begin
-          table[:enable_postprocess] && !postprocess_class.public_send("spreadsheet_row_valid?",row)
-        rescue NoMethodError => e
-          Rails.logger.warn e.message
-          false
-        end
-      end.map do |row|
-        begin
-          table[:enable_postprocess] ? postprocess_class.public_send("postprocess_spreadsheet_row",row) : row
-        rescue NoMethodError => e
-          Rails.logger.warn e.message
-          row
-        end
       end
 
-      table[:rows] = rows
-      if table[:enable_postprocess]
-        begin
-          table = postprocess_class.public_send("postprocess_spreadsheet_table",table) 
-        rescue NoMethodError => e
-          Rails.logger.warn e.message
+      if(table[:enable_postprocess])
+        rows.reject do |row|
+          if postprocess_class.respond_to? "spreadsheet_row_valid?"
+            postprocess_class.public_send("spreadsheet_row_valid?",row)
+          end
+        end.map do |row|
+          if postprocess_class.respond_to? "postprocess_spreadsheet_row"
+            row = postprocess_class.public_send("postprocess_spreadsheet_row",row)
+          end
         end
+
+        table[:rows] = rows
+        if postprocess_class.respond_to? "postprocess_spreadsheet_table"
+          table = postprocess_class.public_send("postprocess_spreadsheet_table",table)
+        end
+      else
+        table[:rows] = rows
       end
+
       return table
     end
 
@@ -118,6 +116,11 @@ module Takenoko
 
       table[:header] = table[:columns_mapping].keys
       return table
+    end
+
+    def format_row(v)
+      return nil unless v
+      ((float = Float(v)) && (float % 1.0 == 0) ? float.to_i : float) rescue v
     end
   end
 end

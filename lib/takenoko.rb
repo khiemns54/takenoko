@@ -22,7 +22,7 @@ module Takenoko
 
   mattr_accessor :file_extension
   @@file_extension = :csv
-  SUPPORTED_FILE_EXT = [:csv,:yaml,:json]
+  SUPPORTED_FILE_EXT = [:csv,:yaml,:json, :yml]
 
   mattr_accessor :export_file_location
   @@export_file_location = "db/spreadsheet"
