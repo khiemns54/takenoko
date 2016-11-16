@@ -17,4 +17,20 @@ namespace :takenoko do
     Takenoko.download_all_files
   end
 
+  namespace :table do
+    (Takenoko::SUPPORTED_FILE_EXT.clone << [:db,:file] ).flatten!.each do |output|
+      task "to_#{output}".to_sym, [:table] => "takenoko:table_to_#{output}"
+    end
+
+    task "download_attachments",[:table] => "takenoko:download_table_files"
+  end
+
+  namespace :all do
+    (Takenoko::SUPPORTED_FILE_EXT.clone << [:db,:file] ).flatten!.each do |output|
+      task "to_#{output}".to_sym => "takenoko:all_to_#{output}"
+    end
+
+    task "download_attachments" => "takenoko:download_all_files"
+  end
+
 end

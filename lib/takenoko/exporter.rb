@@ -41,9 +41,11 @@ module Takenoko
 
     [:yaml,:json].each do |output|
       define_method "convert_to_#{output}" do |table|
-        table[:rows].public_send("to_#{output}")
+        table[:rows].map{|r| r.to_hash}.public_send("to_#{output}")
       end
     end
+
+    alias convert_to_yml convert_to_yaml
   end
 
 end
