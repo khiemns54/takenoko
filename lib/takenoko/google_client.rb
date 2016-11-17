@@ -21,7 +21,15 @@ module Takenoko
       end
 
       update_table_config(table,worksheet.header)
-      postprocess_class = Object.const_get(table[:postprocess_class]) if table[:enable_postprocess] 
+
+      postprocess_class = if table[:enable_postprocess]
+        begin
+          Object.const_get(table[:postprocess_class])
+        rescue NameError => e
+          Rails.logger.warn e.message
+          false
+        end
+      end
 
       Rails.logger.info "Getting table #{table_name}"
       rows = worksheet.populated_rows.map do |r|
@@ -41,7 +49,7 @@ module Takenoko
         hash
       end
 
-      if(table[:enable_postprocess])
+      if(postprocess_class)
         rows.reject do |row|
           if postprocess_class.respond_to? "spreadsheet_row_valid?"
             postprocess_class.public_send("spreadsheet_row_valid?",row)
