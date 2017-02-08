@@ -50,7 +50,7 @@ module Takenoko
       end
 
       if(postprocess_class)
-        rows.reject do |row|
+        table[:rows] = rows.select do |row|
           if postprocess_class.respond_to? "spreadsheet_row_valid?"
             postprocess_class.public_send("spreadsheet_row_valid?",row)
           end
@@ -58,9 +58,9 @@ module Takenoko
           if postprocess_class.respond_to? "postprocess_spreadsheet_row"
             row = postprocess_class.public_send("postprocess_spreadsheet_row",row)
           end
+          row
         end
 
-        table[:rows] = rows
         if postprocess_class.respond_to? "postprocess_spreadsheet_table"
           table = postprocess_class.public_send("postprocess_spreadsheet_table",table)
         end
