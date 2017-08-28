@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version     = Takenoko::VERSION
   s.authors     = ["KhiemNS"]
   s.email       = ["khiemns54@gmail.com"]
-  s.homepage    = "https://github.com/khiemns54/takenoko/tree/release/0.2.9"
+  s.homepage    = "https://github.com/khiemns54/takenoko/tree/release/0.3.0"
   s.summary     = "Import data from google spreadsheet to database or files for Rails"
   s.description = "Rails: Import data from google spreadsheet to database or files, download files that attach to rows"
 
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails", ">= 4.0.13"
-  s.add_dependency "google-api-client", "0.7.1"
+  s.add_dependency "google-api-client", "0.11"
   s.add_dependency "google_drive"
   s.add_development_dependency "sqlite3"
 end
