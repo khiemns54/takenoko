@@ -33,8 +33,6 @@ Other global options, you can overwrite these options in mapping file for each t
 |mapping_file|Optional||Use when you want customize exporting, overwrite default setting for each tables, if not set takenoko will export all worksheet except skipped one.|String|No|
 |file_extension|_Optional_|csv| Export file format|csv,yaml,json|Yes|
 |export_file_location|_Optional_|db/spreadsheet|Location for exported files|String|Yes|
-|truncate_all_data|_Optional_|false|Truncate table before saving data|bool|Yes|
-|allow_overwrite|_Optional_|true|Overwrite duplicated row|bool|Yes|
 |enable_postprocess|Optional|false|Enable validator and filter|bool|Yes|
 |postprocess_class|Optional|nil|Class for post processing, nil for Class = table class name|String|Yes|
 |always_reload|Optional|true|Always reload spreadsheet-database mapping data|bool|No|
@@ -46,7 +44,7 @@ You can refer **[HERE](https://github.com/gimite/google-drive-ruby/blob/master/d
 **"*"**: Allow overwrite in mapping_file.yaml
 
 ###3. Create mapping_file.yaml
-    
+
     tables:
       table1:
         worksheet_id: #
@@ -75,7 +73,7 @@ Table option
 |table_name|Optional|key name|Table name|String|
 |class_name|Optional|singular camel form of _table_name_| Model class name| String|
 |find_column|_Optional_|id|By default takenoko use worksheet row number as id of row, you have to set this option for find and replace duplicated rows|String|
-|sheet_id<br/>file_extension<br/>export_file_location<br/>truncate_all_data<br/>allow_overwrite<br/>enable_postprocess<br/>postprocess_class</br>download_location</br>folder_id</br>|Optional||Overwrite global config||
+|sheet_id<br/>file_extension<br/>export_file_location<br/>enable_postprocess<br/>postprocess_class</br>download_location</br>folder_id</br>|Optional||Overwrite global config||
 
 
 ##Usage
@@ -131,7 +129,7 @@ Takenoko uses three method for post processing. Defined them in your postprocess
 Sometimes, you set row to path of files in google drive, takenoko allows you to download these files and save in local folder. We are preparing for takenoko-s3 extensions to auto download file from googledrive then upload to AWS s3
 
 Specify rows that have attached files in mapping_file.yml
-    
+
     tables:
       table1:
         ....

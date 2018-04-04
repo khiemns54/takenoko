@@ -3,7 +3,7 @@ require 'google_drive'
 require 'google_drive/google_drive'
 require 'google_drive/google_drive/session'
 
-module Takenoko 
+module Takenoko
   extend self
   mattr_accessor :google_cridential_file
   @@google_cridential_file = nil
@@ -27,11 +27,8 @@ module Takenoko
   mattr_accessor :export_file_location
   @@export_file_location = "db/spreadsheet"
 
-  mattr_accessor :truncate_all_data
-  @@truncate_all_data = false
-
-  mattr_accessor :allow_overwrite
-  @@allow_overwrite = true
+  mattr_accessor :import_strategy
+  @@import_strategy = :truncate_all # overwrite, fill_empty, :insert_only
 
   mattr_accessor :sheet_id
   @@sheet_id = nil
@@ -102,7 +99,7 @@ module Takenoko
       end
     end
     raise errors.join("\n") unless errors.empty?
-    
+
     return true
   end
 

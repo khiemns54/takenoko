@@ -5,11 +5,23 @@ module Takenoko
     extend self
     def table_to_db(table)
       tb_class = Object.const_get("::"+table[:class_name])
+      import_strategy = table[:import_strategy]
       raise "Class not found:#{table[:class_name]}" unless tb_class <= ActiveRecord::Base
-      tb_class.destroy_all if table[:truncate_all_data]
+      tb_class.destroy_all if import_strategy == :truncate_all
       table[:rows].each do |r|
         if db_r = tb_class.find_by(table[:find_column] => r[table[:find_column]])
-          db_r.update(r) if table[:allow_overwrite]
+          case import_strategy
+            when :overwrite
+              db_r.update(r)
+            when :fill_empty
+              tmp_r = r.clone
+              tmp_r.delete_if do |k,v|
+                v.blank? || db_r.send(k).present?
+              end
+              db_r.update(tmp_r)
+            when :insert_only
+              next
+            end
         else
           tb_class.new(r).save!
         end

@@ -5,8 +5,7 @@ module Takenoko
 
     mattr_accessor :allowed_overwrite_fields
     @@allowed_overwrite_fields = [
-      :allow_overwrite,
-      :truncate_all_data,
+      :import_strategy,
       :file_extension,
       :export_file_location,
       :enable_postprocess,
@@ -40,6 +39,10 @@ module Takenoko
         allowed_overwrite_fields.each do |f|
           table[f] = Takenoko.public_send(f) unless table.key?(f)
         end
+      }],
+
+      [:import_strategy, ->(name, table){
+          table[:import_strategy] = table[:import_strategy].to_sym
       }],
 
       [:set_postprocess_class, ->(name, table){
