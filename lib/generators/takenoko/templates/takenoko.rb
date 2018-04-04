@@ -15,14 +15,11 @@ Takenoko.config do |conf|
   # Export file format, default :csv, support: csv,yaml,json
   # conf.file_extension = :csv
 
-  # Truncate all data before saving, default: false
-  # conf.truncate_all_data = false
+  # Import strategy, default: truncate_all (overwrite, fill_empty, :insert_only)
+  # conf.import_strategy = :truncate_all
 
   # Export file location, default: db/spreadsheet
   # conf.export_file_location = "db/spreadsheet"
-
-  # Allow overwrite duplicated row, default: true
-  # conf.allow_overwrite = true
 
   # Enable post processing after get row from spreadsheet, default false
   # Define three more method on your post process class to handle it
